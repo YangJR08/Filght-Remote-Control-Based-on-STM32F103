@@ -58,10 +58,15 @@ file(GLOB_RECURSE FREERTOS_SOURCES CONFIGURE_DEPENDS
     ${CMAKE_CURRENT_LIST_DIR}/FreeRTOS/*.c
 )
 
+file(GLOB_RECURSE INTERFACE_SOURCES CONFIGURE_DEPENDS
+    ${CMAKE_CURRENT_LIST_DIR}/FreeRTOS/*.c
+)
+
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     ${APP_SOURCES}
     ${COMMOM_SOURCES}
     ${FREERTOS_SOURCES}
+    ${INTERFACE_SOURCES}
 )
 
 # Add include paths
@@ -76,6 +81,7 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}/FreeRTOS
     ${CMAKE_CURRENT_LIST_DIR}/FreeRTOS/include
     ${CMAKE_CURRENT_LIST_DIR}/FreeRTOS/portable
+    ${CMAKE_CURRENT_LIST_DIR}/Interface/Interface_H
 )
 
 # Add project symbols (macros)

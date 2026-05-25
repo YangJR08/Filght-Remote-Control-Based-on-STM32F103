@@ -657,4 +657,7 @@
 #define xPortPendSVHandler   PendSV_Handler
 #define vPortSVCHandler     SVC_Handler
 
+ 
+extern void xPortSysTickHandler( void );
+
 #endif /* FREERTOS_CONFIG_H */
