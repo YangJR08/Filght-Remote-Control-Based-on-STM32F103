@@ -4,7 +4,13 @@
 #include "int_joystick.h"
 #include "int_key.h"
 #include "Com_debug.h"
+#include "Com_tool.h"
 
+//油门零偏值定义，根据实际情况调整
+#define THROTTLE_ZERO_OFFSET 0
+#define YAW_ZERO_OFFSET 500
+#define PITCH_ZERO_OFFSET 500
+#define ROLL_ZERO_OFFSET 500
 //遥控数据定义
 typedef struct
 {

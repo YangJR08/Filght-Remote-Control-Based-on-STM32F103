@@ -1,6 +1,8 @@
 #include "APP_process_data.h"
 #include "int_joystick.h"
 
+
+
 Joystick_Struct joystick_data = {0}; // 定义一个全局变量来存储摇杆数据，方便在任务中使用
 Remote_Data remote_data = {0}; // 定义一个全局变量来存储遥控数据，方便在任务中使用
 
@@ -10,16 +12,19 @@ Joystick_Struct zero_offset = {0}; // 定义一个结构体来零偏值
 //校准摇杆函数
 void APP_process_calibrate_joystick(void)
 {
+    //清空按键微调值，避免校准时按键微调对零偏值的计算造成干扰
+    key_adjustment.pitch_adj = 0;
+    key_adjustment.roll_adj = 0;
     //逻辑减去零偏的值测量多次求平均值
     const uint8_t calibrate_samples = 10; // 定义一个常量来指定校准时采样的次数
     for(uint8_t i = 0; i < calibrate_samples; i++)
     {
         Joystick_Struct sample;
         Int_joystick_get(&sample);
-        zero_offset.throttle += sample.throttle;
-        zero_offset.yaw += sample.yaw;
-        zero_offset.pitch += sample.pitch;
-        zero_offset.roll += sample.roll;
+        zero_offset.throttle += sample.throttle-THROTTLE_ZERO_OFFSET;   //油门的零点在0，根据实际情况调整
+        zero_offset.yaw += sample.yaw-YAW_ZERO_OFFSET; // 偏航的零点在500，根据实际情况调整
+        zero_offset.pitch += sample.pitch-PITCH_ZERO_OFFSET; // 俯仰的零点在500，根据实际情况调整
+        zero_offset.roll += sample.roll-ROLL_ZERO_OFFSET;
         vTaskDelay(10); // 每次采样之间延时10ms，避免过快采样导致数据不稳定
     }
     //计算平均零偏值
@@ -87,6 +92,16 @@ void APP_process_joystick_data(void)
     joystick_data.yaw -= zero_offset.yaw; // 偏航值减去零偏值
     joystick_data.pitch -= zero_offset.pitch; // 俯仰值减去零偏值
     joystick_data.roll -= zero_offset.roll; // 滚转值减去零偏值   
+
+    //使用按键微调，FREERTOS任务中调用这个函数获取摇杆状态并处理
+    joystick_data.pitch += key_adjustment.pitch_adj; // 俯仰值加上按键微调值
+    joystick_data.roll += key_adjustment.roll_adj; // 滚转值加上按键微调值
+
+    //范围限制
+    joystick_data.throttle = Com_limit_value(joystick_data.throttle, 0, 1000);
+    joystick_data.yaw = Com_limit_value(joystick_data.yaw, 0, 1000);
+    joystick_data.pitch = Com_limit_value(joystick_data.pitch, 0, 1000);
+    joystick_data.roll = Com_limit_value(joystick_data.roll, 0, 1000);
 
     //用VOFA检测摇杆数据，debug_printf输出格式要符合VOFA要求，方便VOFA解析显示
     debug_printf(":%d,%d,%d,%d\n", joystick_data.throttle, joystick_data.yaw, joystick_data.pitch, joystick_data.roll);
