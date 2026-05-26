@@ -194,7 +194,7 @@ void Int_SI24R1_TX_Mode(void)
 返回  值：0:接收到数据
           1:没有接收到数据
 *********************************************************/
-uint8_t SI24R1_RxPacket(uint8_t *rxbuf)
+uint8_t Int_SI24R1_RxPacket(uint8_t *rxbuf)
 {
 	uint8_t state;
 	//将读取到的状态寄存器值写回状态寄存器，清除RX_DR中断标志，和芯片设计有关
@@ -228,7 +228,8 @@ uint8_t Int_SI24R1_TxPacket(uint8_t *txbuf)
 	//轮询方式等待发送完成，或者达到最大重发次数
 	while((state & TX_DS) == 0 && (state & MAX_RT) == 0)
 	{
-		state = Int_SI24R1_Read_Reg(STATUS);  								//读取状态寄存器的值
+		state = Int_SI24R1_Read_Reg(STATUS); 	//读取状态寄存器的值
+		vTaskDelay(1); 								
 	}	   
 	Int_SI24R1_Write_Reg(SI24R1_WRITE_REG+STATUS, state); 		//清除TX_DS或MAX_RT中断标志
 	if(state&MAX_RT)															//达到最大重发次数

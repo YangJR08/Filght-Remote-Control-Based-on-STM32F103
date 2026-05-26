@@ -1,6 +1,5 @@
 #include "APP_FreeRTOS_Task.h"
-#include "Com_debug.h"
-#include <stdint.h>
+#include "APP_process_data.h"
 
 
 
@@ -16,8 +15,29 @@ void power_task(void *pvParameters); //创建电源管理任务
 TaskHandle_t power_task_Handle = NULL;  //电源管理任务的句柄，可以用来操作任务，如删除、挂起等
 #define POWER_TASK_DELAY_MS 10000 // 电源管理任务的延时周期，单位为毫秒
 
+//通讯任务
+void com_task(void *pvParameters); //创建通讯任务
+#define COM_TASK_STACK_SIZE 128 //通讯任务的栈空间大小，单位为字（4字节为1字）
+#define COM_TASK_PRIORITY 3   //通讯任务的优先级，数值越大
+//优先级越高，范围从0到configMAX_PRIORITIES-1
+TaskHandle_t com_task_Handle = NULL;  //通讯任务的句柄，可以用来操作任务，如删除、挂起等    
+//任务延时周期，单位为毫秒
+#define COM_TASK_DELAY_MS 6
+
+//按键任务
+void key_task(void *pvParameters); //创建按键任务
+#define KEY_TASK_STACK_SIZE 128 //按键任务的栈空间大小，单位为字（4字节为1字）
+#define KEY_TASK_PRIORITY 2   //按键任务的优先级，数值越大优先级越高，范围从0到configMAX_PRIORITIES-1
+TaskHandle_t key_task_Handle = NULL;  //按键任务的句柄，可以用来操作任务，如删除、挂起等
+#define KEY_TASK_DELAY_MS 20 // 按键任务的延时周期，单位为毫秒
 
 
+//摇杆任务和按键任务优先级同级
+void joystick_task(void *pvParameters); //创建摇杆任务
+#define JOYSTICK_TASK_STACK_SIZE 128 //摇杆任务的栈空间大小，单位为字（4字节为1字）
+#define JOYSTICK_TASK_PRIORITY 2   //摇杆任务的优先级，数值越大优先级越高，范围从0到configMAX_PRIORITIES-1
+TaskHandle_t joystick_task_Handle = NULL;  //摇杆任务的句柄，可以用来操作任务，如删除、挂起等
+#define JOYSTICK_TASK_DELAY_MS 20 // 摇杆任务的延时周期，单位为毫秒
 
 
 //void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName);
@@ -48,7 +68,13 @@ void APP_FreeRTOS_Task_Start(void)
     //创建任务
     //1、创建电源管理任务
     xTaskCreate(power_task, "power_task", POWER_TASK_STACK_SIZE, NULL, POWER_TASK_PRIORITY, &power_task_Handle);
-   
+    //2、创建通讯任务
+    xTaskCreate(com_task, "com_task", COM_TASK_STACK_SIZE, NULL, COM_TASK_PRIORITY, &com_task_Handle);
+    //3、创建按键任务
+    xTaskCreate(key_task, "key_task", KEY_TASK_STACK_SIZE, NULL, KEY_TASK_PRIORITY, &key_task_Handle);
+    //4、创建摇杆任务
+    xTaskCreate(joystick_task, "joystick_task", JOYSTICK_TASK_STACK_SIZE, NULL, JOYSTICK_TASK_PRIORITY, &joystick_task_Handle);
+
     #if FreeRTOStest
     //移植freertos测试代码，创建两个任务，每个任务每秒打印一次自己的信息。
     xTaskCreate(task1, "Task1", TASK1_STACK_SIZE, NULL, TASK1_PRIORITY, &task1Handle);
@@ -72,7 +98,57 @@ void power_task(void *pvParameters)
     }
 }
 
+/*
+通讯任务
+*/
+uint8_t com_buff[TX_PLOAD_WIDTH] = {0}; // 定义一个全局发送缓冲区，大小为TX_PLOAD_WIDTH字节，初始值为0
 
+void com_task(void *pvParameters)
+{
+    //获取基准时间
+    TickType_t xLastWakeTime = xTaskGetTickCount();
+    while(1)
+    {
+        //调用SI24R1的接口发送数据
+        //1、进入TX模式
+        Int_SI24R1_TX_Mode();
+        //2、发送数据包
+        Int_SI24R1_TxPacket(com_buff);
+        //3、进入RX模式，等待下一个数据包
+        Int_SI24R1_RX_Mode();
+        //6ms周期执行一次通讯任务的功能
+        vTaskDelayUntil(&xLastWakeTime, COM_TASK_DELAY_MS);
+    }
+}
+
+
+/*
+按键任务
+*/
+void key_task(void *pvParameters)
+{
+    //获取基准时间
+    TickType_t xLastWakeTime = xTaskGetTickCount();
+    while(1)
+    {
+        APP_process_key_data();
+        //延时，避免频繁查询按键状态
+        vTaskDelayUntil(&xLastWakeTime, KEY_TASK_DELAY_MS);
+    }
+}
+
+void joystick_task(void *pvParameters)
+{
+    //获取基准时间
+    TickType_t xLastWakeTime = xTaskGetTickCount();
+    //初始化摇杆ADC
+    Int_joystick_init();
+    while(1)
+    {
+        APP_process_joystick_data();
+        vTaskDelayUntil(&xLastWakeTime, JOYSTICK_TASK_DELAY_MS);
+    }
+}
 
 #if FreeRTOStest
 //移植freertos测试代码，创建两个任务，每个任务每秒打印一次自己的信息。

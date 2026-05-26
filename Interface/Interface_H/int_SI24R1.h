@@ -4,7 +4,8 @@
 #include "main.h"
 #include "spi.h"
 #include "Com_debug.h"
-
+#include "FreeRTOS.h"
+#include "task.h"
 
 #define SI24RI_SPI  hspi1// 定义使用的SPI外设句柄，根据实际情况修改
 //STM32的SPI来实现nRF24L01P的通信

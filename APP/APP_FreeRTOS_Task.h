@@ -6,6 +6,9 @@
 #include "Com_debug.h"
 #include "int_IP5305T.h"
 #include "int_SI24R1.h"
+#include "APP_process_data.h"
+#include <stdint.h>
+
 
 #define FreeRTOStest 0 // 1：启用实时操作系统测试任务，0：禁用
 
