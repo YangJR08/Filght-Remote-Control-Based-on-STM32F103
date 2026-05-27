@@ -163,8 +163,15 @@ void APP_process_joystick_data(void)
     APP_Data_Lock();
     joystick_data = local_joystick;
     APP_Data_Unlock();
+    //将摇杆数据赋值到remote_data结构体中，方便后续发送
+    APP_Data_Lock();
+    remote_data.throttle = joystick_data.throttle; 
+    remote_data.yaw = joystick_data.yaw;
+    remote_data.pitch = joystick_data.pitch;
+    remote_data.roll = joystick_data.roll;
+    APP_Data_Unlock();
     //用VOFA检测摇杆数据，debug_printf输出格式要符合VOFA要求，方便VOFA解析显示
-    debug_printf(":%d,%d,%d,%d\n", local_joystick.throttle, local_joystick.yaw, local_joystick.pitch, local_joystick.roll);
+    //debug_printf(":%d,%d,%d,%d\n", local_joystick.throttle, local_joystick.yaw, local_joystick.pitch, local_joystick.roll);
     //根据摇杆状态执行相应操作
     //延时，避免频繁查询摇杆状态
 }

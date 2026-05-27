@@ -1,4 +1,5 @@
 #include "APP_transmit.h"
+#include "Com_debug.h"
 
 
 
@@ -31,6 +32,7 @@ void APP_transmit_data(void)
     //计算校验和，累加数据帧的每个字节，除了最后一个字节（校验和帧）
     memcpy(&local_remote_data, &remote_data, sizeof(Remote_Data)); // 将Remote_Data结构体的数据复制到发送缓冲区的前面部分
     remote_data.altitude = 0; // 定高按键是瞬时的，发送完数据后需要清零
+    remote_data.shutdown = 0; // 关机按键是瞬时的，发送完数据后需要清零
     APP_Data_Unlock();
     transmit_buffer[0] = FRAME_HEADER_1;
     transmit_buffer[1] = FRAME_HEADER_2;
@@ -63,7 +65,8 @@ void APP_transmit_data(void)
     transmit_buffer[16] = checksum & 0xFF;
 
     Int_SI24R1_TxPacket(transmit_buffer);
-
+    //打印数据给VOFA解析
+    debug_printf(":%d,%d,%d,%d,%d,%d\n", local_remote_data.throttle, local_remote_data.yaw, local_remote_data.pitch, local_remote_data.roll, local_remote_data.altitude, local_remote_data.shutdown);
 
     //切换回接收模式
     Int_SI24R1_RX_Mode();
