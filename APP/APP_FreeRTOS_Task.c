@@ -101,7 +101,7 @@ void power_task(void *pvParameters)
 /*
 通讯任务
 */
-uint8_t com_buff[TX_PLOAD_WIDTH] = {0}; // 定义一个全局发送缓冲区，大小为TX_PLOAD_WIDTH字节，初始值为0
+
 
 void com_task(void *pvParameters)
 {
@@ -109,14 +109,10 @@ void com_task(void *pvParameters)
     TickType_t xLastWakeTime = xTaskGetTickCount();
     while(1)
     {
-        //调用SI24R1的接口发送数据
-        //1、进入TX模式
-        Int_SI24R1_TX_Mode();
-        //2、发送数据包
-        Int_SI24R1_TxPacket(com_buff);
-        //3、进入RX模式，等待下一个数据包
-        Int_SI24R1_RX_Mode();
-        //6ms周期执行一次通讯任务的功能
+        //执行通讯任务的功能
+        //调用发送函数，发送数据，数据来源于全局发送缓冲区
+        APP_transmit_data();
+
         vTaskDelayUntil(&xLastWakeTime, COM_TASK_DELAY_MS);
     }
 }

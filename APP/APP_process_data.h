@@ -6,6 +6,8 @@
 #include "Com_debug.h"
 #include "Com_tool.h"
 
+
+
 //油门零偏值定义，根据实际情况调整
 #define THROTTLE_ZERO_OFFSET 0
 #define YAW_ZERO_OFFSET 500
@@ -22,6 +24,7 @@ typedef struct
     int8_t shutdown;  //关机值，范围
 } Remote_Data;
 
+extern Remote_Data remote_data; // 定义一个全局变量来存储遥控数据，方便在任务中使用
 
 //按键微调结构体,只有前后左右四个按键的微调，摇杆按键不考虑微调
 typedef struct
@@ -35,5 +38,8 @@ void APP_process_calibrate_joystick(void); //校准摇杆函数
 void APP_process_key_data(void);
 //处理摇杆数据，获取最新的摇杆状态，摇杆输出的值在一个稳定范围，修正极性相位标准值等，方便后续使用
 void APP_process_joystick_data(void);
+//共享数据互斥锁，跨任务访问时使用
+void APP_Data_Lock(void);
+void APP_Data_Unlock(void);
 
 #endif // APP_PROCESS_DATA_H

@@ -26,7 +26,7 @@ static void APP_Data_MutexInit(void)
     }
 }
 //数据访问锁定和解锁函数，确保在访问共享数据时进行互斥保护，避免数据竞争和不一致
-static void APP_Data_Lock(void)
+void APP_Data_Lock(void)
 {
     APP_Data_MutexInit();
     if (app_data_mutex != NULL)
@@ -35,7 +35,7 @@ static void APP_Data_Lock(void)
     }
 }
 //数据访问解锁函数，释放互斥锁，允许其他任务访问共享数据
-static void APP_Data_Unlock(void)
+void APP_Data_Unlock(void)
 {
     if (app_data_mutex != NULL)
     {
