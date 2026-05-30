@@ -82,6 +82,7 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}/FreeRTOS/include
     ${CMAKE_CURRENT_LIST_DIR}/FreeRTOS/portable
     ${CMAKE_CURRENT_LIST_DIR}/Interface/Interface_H
+    ${CMAKE_CURRENT_LIST_DIR}/Interface/OLED
 )
 
 # Add project symbols (macros)

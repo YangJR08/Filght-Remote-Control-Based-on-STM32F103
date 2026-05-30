@@ -9,6 +9,7 @@
 #include "APP_process_data.h"
 #include <stdint.h>
 #include <APP_transmit.h>
+#include "APP_display.h"
 
 
 #define FreeRTOStest 0 // 1：启用实时操作系统测试任务，0：禁用

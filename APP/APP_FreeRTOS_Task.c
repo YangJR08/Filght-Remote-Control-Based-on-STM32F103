@@ -39,6 +39,12 @@ void joystick_task(void *pvParameters); //创建摇杆任务
 TaskHandle_t joystick_task_Handle = NULL;  //摇杆任务的句柄，可以用来操作任务，如删除、挂起等
 #define JOYSTICK_TASK_DELAY_MS 20 // 摇杆任务的延时周期，单位为毫秒
 
+//屏幕任务
+void screen_task(void *pvParameters); //创建屏幕任务
+#define SCREEN_TASK_STACK_SIZE 128 //屏幕任务的栈空间大小，单位为字（4字节为1字）
+#define SCREEN_TASK_PRIORITY 1   //屏幕任务的优先级，数值越大优先级越高，范围从0到configMAX_PRIORITIES-1
+TaskHandle_t screen_task_Handle = NULL;  //屏幕任务的句柄，可以用来操作任务，如删除、挂起等
+#define SCREEN_TASK_DELAY_MS 100 // 屏幕任务的延时周期，单位为毫秒
 
 //void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName);
 
@@ -74,6 +80,8 @@ void APP_FreeRTOS_Task_Start(void)
     xTaskCreate(key_task, "key_task", KEY_TASK_STACK_SIZE, NULL, KEY_TASK_PRIORITY, &key_task_Handle);
     //4、创建摇杆任务
     xTaskCreate(joystick_task, "joystick_task", JOYSTICK_TASK_STACK_SIZE, NULL, JOYSTICK_TASK_PRIORITY, &joystick_task_Handle);
+    //5、创建屏幕任务
+    xTaskCreate(screen_task, "screen_task", SCREEN_TASK_STACK_SIZE, NULL, SCREEN_TASK_PRIORITY, &screen_task_Handle);
 
     #if FreeRTOStest
     //移植freertos测试代码，创建两个任务，每个任务每秒打印一次自己的信息。
@@ -143,6 +151,19 @@ void joystick_task(void *pvParameters)
     {
         APP_process_joystick_data();
         vTaskDelayUntil(&xLastWakeTime, JOYSTICK_TASK_DELAY_MS);
+    }
+}
+
+void screen_task(void *pvParameters)
+{
+    APP_display_init(); // 初始化显示
+    //获取基准时间
+    TickType_t xLastWakeTime = xTaskGetTickCount();
+    while(1)
+    {
+        APP_display_show();
+        //执行屏幕任务的功能
+        vTaskDelayUntil(&xLastWakeTime, SCREEN_TASK_DELAY_MS);
     }
 }
 
